@@ -19,23 +19,47 @@ const Home = () => {
   const perPage = 1;
 
   const fetchNFTs = async () => {
-    // add some code here
+      try{
+      setLoading(true);
+      setCurrentView(null);
+      const list = await mx.nfts().findAllByOwner({ owner: new PublicKey(address)});
+      setNftList(list);
+      setCurrentPage(1);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   useEffect(() => {
     if (!nftList) {
       return;
     }
+ const execute=async()=>{
+      const startIndex = (currentPage - 1) * perPage;
+      const endIndex = currentPage * perPage;
+      const nfts = await loadData(startIndex, endIndex);
 
-    // add some code here
+      setCurrentView(nfts);
+      setLoading(false);
+    };
+
+    execute();
   }, [nftList, currentPage]);
 
   const loadData = async (startIndex, endIndex) => {
-    // add some code here
+   const nftsToLoad = nftList.filter((_, index) => (index >= startIndex && index < endIndex));
+
+    const promises = nftsToLoad.map((metadata) => mx.nfts().load({ metadata }));
+    return Promise.all(promises);
   };
 
   const changeCurrentPage = (operation) => {
-    // add some code here
+      setLoading(true);
+    if (operation === 'next') {
+      setCurrentPage((prevValue) => prevValue + 1);
+    } else {
+      setCurrentPage((prevValue) => (prevValue > 1 ? prevValue - 1 : 1));
+    }
   };
 
   return (
